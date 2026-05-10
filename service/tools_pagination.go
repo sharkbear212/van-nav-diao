@@ -31,8 +31,13 @@ if keyword != "" {
 		return nil, 0
 	}
 
+	orderClause := " ORDER BY sort ASC, id ASC"
+	if catelog != "" {
+		orderClause = " ORDER BY CASE WHEN catelog_sort IS NULL OR catelog_sort=0 THEN sort ELSE catelog_sort END ASC, id ASC"
+	}
+
 	// Data query
-	dataSQL := "SELECT id,name,url,logo,catelog,desc,sort,hide FROM nav_table " + whereClause + " ORDER BY sort LIMIT ? OFFSET ?"
+	dataSQL := "SELECT id,name,url,logo,catelog,desc,sort,catelog_sort,hide FROM nav_table " + whereClause + orderClause + " LIMIT ? OFFSET ?"
 	args = append(args, pageSize, offset)
 
 	results := make([]types.Tool, 0)
@@ -47,22 +52,11 @@ if keyword != "" {
 		var tool types.Tool
 		var hide interface{}
 		var sort interface{}
-		err = rows.Scan(&tool.Id, &tool.Name, &tool.Url, &tool.Logo, &tool.Catelog, &tool.Desc, &sort, &hide)
-		if hide == nil {
-			tool.Hide = false
-		} else {
-			if hide.(int64) == 0 {
-				tool.Hide = false
-			} else {
-				tool.Hide = true
-			}
-		}
-		if sort == nil {
-			tool.Sort = 0
-		} else {
-			i64 := sort.(int64)
-			tool.Sort = int(i64)
-		}
+		var catelogSort interface{}
+		err = rows.Scan(&tool.Id, &tool.Name, &tool.Url, &tool.Logo, &tool.Catelog, &tool.Desc, &sort, &catelogSort, &hide)
+		tool.Hide = parseBoolInt(hide)
+		tool.Sort = parseInt(sort)
+		tool.CatelogSort = parseInt(catelogSort)
 		utils.CheckErr(err)
 		results = append(results, tool)
 	}

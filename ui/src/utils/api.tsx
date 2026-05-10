@@ -153,8 +153,14 @@ export const fetchDeleteApiToken = async (id: number) => {
     const { data } = await axios.delete(`/api/admin/apiToken/${id}`);
     return data?.data || {};
 };
-export const fetchUpdateToolsSort = async (updates: { id: number; sort: number }[]) => {
-    const { data } = await axios.put(`/api/admin/tools/sort`, updates);
+export const fetchUpdateToolsSort = async (
+    updates: { id: number; sort?: number; catelogSort?: number }[],
+    catelog?: string
+) => {
+    const params = new URLSearchParams();
+    if (catelog) params.append('catelog', catelog);
+    const suffix = params.toString() ? `?${params.toString()}` : "";
+    const { data } = await axios.put(`/api/admin/tools/sort${suffix}`, updates);
     return data?.data || {};
 };
 

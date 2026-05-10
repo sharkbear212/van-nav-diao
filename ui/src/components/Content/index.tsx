@@ -174,6 +174,25 @@ const Content = (props: any) => {
             mutiSearch(item.url, searchString)
           );
         });
+      localResult.sort((a: any, b: any) => {
+        const FALLBACK_SORT = Number.MAX_SAFE_INTEGER;
+        const normalizeSort = (value: any) => {
+          const num = Number(value);
+          return Number.isFinite(num) && num > 0 ? num : FALLBACK_SORT;
+        };
+
+        if (currTag === "全部工具") {
+          const diff = normalizeSort(a.sort) - normalizeSort(b.sort);
+          if (diff !== 0) return diff;
+          return String(a.id ?? "").localeCompare(String(b.id ?? ""));
+        }
+
+        const aSort = normalizeSort(a.catelogSort) !== FALLBACK_SORT ? normalizeSort(a.catelogSort) : normalizeSort(a.sort);
+        const bSort = normalizeSort(b.catelogSort) !== FALLBACK_SORT ? normalizeSort(b.catelogSort) : normalizeSort(b.sort);
+        const diff = aSort - bSort;
+        if (diff !== 0) return diff;
+        return String(a.id ?? "").localeCompare(String(b.id ?? ""));
+      });
       return localResult;
     } else {
       return [];

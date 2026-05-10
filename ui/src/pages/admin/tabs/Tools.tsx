@@ -45,6 +45,7 @@ interface DataType {
   id: number;
   name: string;
   sort: number;
+  catelogSort?: number;
   [key: string]: any;
 }
 
@@ -282,11 +283,18 @@ const ToolModal = ({
             onChange={e => setFormData({ ...formData, desc: e.target.value })}
           />
         </FormItem>
-        <FormItem label="排序">
+        <FormItem label="全局排序">
           <Input
             type="number"
-            value={formData.sort}
-            onChange={e => setFormData({ ...formData, sort: parseInt(e.target.value) })}
+            value={formData.sort ?? 0}
+            onChange={e => setFormData({ ...formData, sort: parseInt(e.target.value) || 0 })}
+          />
+        </FormItem>
+        <FormItem label="分类内排序">
+          <Input
+            type="number"
+            value={formData.catelogSort ?? 0}
+            onChange={e => setFormData({ ...formData, catelogSort: parseInt(e.target.value) || 0 })}
           />
         </FormItem>
         <FormItem label="隐藏">
@@ -354,12 +362,22 @@ export const Tools = () => {
         const newData = arrayMove(previous, oldIndex, newIndex);
 
         // Update sort order in backend
-        const updates = newData.map((item, index) => ({
-          id: item.id,
-          sort: (page - 1) * pageSize + index + 1,
-        }));
+        const updates = newData.map((item, index) => {
+          const nextSort = (page - 1) * pageSize + index + 1;
+          if (catelogName) {
+            return {
+              id: item.id,
+              catelogSort: nextSort,
+              sort: item.sort,
+            };
+          }
+          return {
+            id: item.id,
+            sort: nextSort,
+          };
+        });
         // Fire and forget, or handle error
-        fetchUpdateToolsSort(updates).then(() => loadData());
+        fetchUpdateToolsSort(updates, catelogName || undefined).then(() => loadData());
 
         return newData;
       });
@@ -368,7 +386,8 @@ export const Tools = () => {
 
   const resetForm = () => {
     setFormData({
-      sort: 1,
+      sort: 0,
+      catelogSort: 0,
       hide: false,
       name: "",
       url: "",
@@ -474,6 +493,7 @@ export const Tools = () => {
   }
 
   const categoryOptions = getOptions(store?.catelogs || []);
+  const isAllCategoriesView = !catelogName;
 
 
 
@@ -546,6 +566,9 @@ export const Tools = () => {
                     名称
                   </th>
                   <th scope="col" className={clsx("van-tools-th", styles.th)}>
+                    {isAllCategoriesView ? "全局排序" : "分类排序"}
+                  </th>
+                  <th scope="col" className={clsx("van-tools-th", styles.th)}>
                     分类
                   </th>
                   <th scope="col" className={clsx("van-tools-th", styles.th)}>
@@ -578,6 +601,9 @@ export const Tools = () => {
                           <ToolLogo logo={record.logo} name={record.name} className="h-8 w-8 rounded-full mr-3 text-xs" />
                           <span className="font-medium text-gray-900 dark:text-white truncate" title={record.name}>{record.name}</span>
                         </div>
+                      </td>
+                      <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                        {isAllCategoriesView ? record.sort : (record.catelogSort || record.sort)}
                       </td>
                       <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {record.catelog}

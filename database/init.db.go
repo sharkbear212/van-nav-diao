@@ -117,6 +117,13 @@ func InitDB() {
 		DB.Exec(`ALTER TABLE nav_table ADD COLUMN hide BOOLEAN;`)
 	}
 
+	// tools数据表结构升级-20260510-分类内排序
+	if !columnExists("nav_table", "catelog_sort") {
+		DB.Exec(`ALTER TABLE nav_table ADD COLUMN catelog_sort INTEGER;`)
+	}
+	// 兼容历史数据：分类排序为空时沿用全局排序
+	DB.Exec(`UPDATE nav_table SET catelog_sort = sort WHERE catelog_sort IS NULL;`)
+
 	// 分类表
 	sql_create_table = `
 		CREATE TABLE IF NOT EXISTS nav_catelog (

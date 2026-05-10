@@ -42,6 +42,7 @@ type Tool struct {
 	Catelog string `json:"catelog"`
 	Desc    string `json:"desc"`
 	Sort    int    `json:"sort"`
+	CatelogSort int `json:"catelogSort"`
 	Hide    bool   `json:"hide"`
 }
 

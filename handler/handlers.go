@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"net/http"
-	"net/url"
 	urlPkg "net/url"
 	"strconv"
 	"strings"
@@ -414,29 +413,17 @@ func AddToolHandler(c *gin.Context) {
 func DeleteToolHandler(c *gin.Context) {
 	// 删除工具
 	id := c.Param("id")
-	sql_delete_tool := `
-		DELETE FROM nav_table WHERE id = ?;
-		`
-	stmt, err := database.DB.Prepare(sql_delete_tool)
-	utils.CheckErr(err)
-	res, err := stmt.Exec(id)
-	utils.CheckErr(err)
-	_, err = res.RowsAffected()
-	utils.CheckErr(err)
-	// 删除工具的 logo，如果有
 	numberId, err := strconv.Atoi(id)
-	utils.CheckErr(err)
-	url1 := service.GetToolLogoUrlById(numberId)
-	urlEncoded := url.QueryEscape(url1)
-	sql_delete_tool_img := `
-		DELETE FROM nav_img WHERE url = ?;
-		`
-	stmt, err = database.DB.Prepare(sql_delete_tool_img)
-	utils.CheckErr(err)
-	res, err = stmt.Exec(urlEncoded)
-	utils.CheckErr(err)
-	_, err = res.RowsAffected()
-	utils.CheckErr(err)
+	if err != nil {
+		utils.CheckErr(err)
+		c.JSON(http.StatusBadRequest, gin.H{"success": false, "errorMessage": "无效ID"})
+		return
+	}
+	if err = service.DeleteTool(numberId); err != nil {
+		utils.CheckErr(err)
+		c.JSON(http.StatusInternalServerError, gin.H{"success": false, "errorMessage": err.Error()})
+		return
+	}
 	c.JSON(200, gin.H{
 		"success": true,
 		"message": "删除成功",
@@ -576,7 +563,8 @@ func UpdateToolsSortHandler(c *gin.Context) {
 		return
 	}
 
-	err := service.UpdateToolsSort(updates)
+	catelog := c.Query("catelog")
+	err := service.UpdateToolsSort(updates, catelog)
 	if err != nil {
 		utils.CheckErr(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -629,84 +617,11 @@ func BatchDeleteToolHandler(c *gin.Context) {
 		return
 	}
 
-	// 1. Collect Logo URLs first (Read operation)
-	var logoUrls []string
-	for _, id := range ids {
-		url := service.GetToolLogoUrlById(id)
-		if url != "" {
-			logoUrls = append(logoUrls, url)
-		}
-	}
-
-	// 2. Start Transaction (Write operation)
-	tx, err := database.DB.Begin()
-	if err != nil {
+	if err := service.BatchDeleteTools(ids); err != nil {
 		utils.CheckErr(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"success":      false,
-			"errorMessage": "数据库忙，请稍后重试",
-		})
-		return
-	}
-
-	// Prepare statements
-	sql_delete_tool := "DELETE FROM nav_table WHERE id = ?;"
-	stmtTool, err := tx.Prepare(sql_delete_tool)
-	if err != nil {
-		tx.Rollback()
-		utils.CheckErr(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success":      false,
-			"errorMessage": "准备删除语句失败",
-		})
-		return
-	}
-	defer stmtTool.Close()
-
-	sql_delete_img := "DELETE FROM nav_img WHERE url = ?;"
-	stmtImg, err := tx.Prepare(sql_delete_img)
-	if err != nil {
-		tx.Rollback()
-		utils.CheckErr(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success":      false,
-			"errorMessage": "准备图片删除语句失败",
-		})
-		return
-	}
-	defer stmtImg.Close()
-
-	// Execute Deletes
-	for _, id := range ids {
-		_, err := stmtTool.Exec(id)
-		if err != nil {
-			tx.Rollback()
-			utils.CheckErr(err)
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"success":      false,
-				"errorMessage": "删除工具失败: " + strconv.Itoa(id),
-			})
-			return
-		}
-	}
-
-	for _, url := range logoUrls {
-		if url == "" {
-			continue
-		}
-		urlEncoded := urlPkg.QueryEscape(url)
-		_, err := stmtImg.Exec(urlEncoded)
-		if err != nil {
-			logger.LogError("Failed to delete image: %s, error: %s", url, err)
-		}
-	}
-
-	err = tx.Commit()
-	if err != nil {
-		utils.CheckErr(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"success":      false,
-			"errorMessage": "提交事务失败",
+			"errorMessage": "批量删除失败",
 		})
 		return
 	}
