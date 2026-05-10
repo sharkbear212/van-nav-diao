@@ -6,6 +6,7 @@
 [源库地址](https://github.com/van579/nav) 
 
 第一次用github，不太会用，直接自己fork一个用AI改着玩。
+我完全不懂代码，所有改动都基于ChatGPT的指导，感谢AI大人。
 
 安装方法
 ### Docker
