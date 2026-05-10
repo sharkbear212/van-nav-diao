@@ -7,6 +7,17 @@
 
 第一次用github，不太会用，直接自己fork一个用AI改着玩。
 
+安装方法
+### Docker
+```
+docker run -d \
+  --name tools \
+  --restart always \
+  -p 6412:6412 \
+  -v /opt/van-nav-diao/data:/app/data \
+  van-nav-diao:latest
+```
+
 20260510 后台搜索框里，可进行网址的搜索
 
 ## 预览
@@ -51,9 +62,7 @@
 
 ## 安装方法
 
-### Docker
 
-```
 docker run -d --name tools --restart always -p 6412:6412 -v /path/to/your/data:/app/data 1i1i/nav:latest
 ```
 
