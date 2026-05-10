@@ -9,13 +9,14 @@
 
 安装方法
 ### Docker
-```
+
+```bash
 docker run -d \
   --name tools \
   --restart always \
   -p 6412:6412 \
-  -v /opt/van-nav-diao/data:/app/data \
-  van-nav-diao:latest
+  -v /path/to/your/data:/app/data \
+  aierdiao/van-nav-diao:latest
 ```
 
 20260510 后台搜索框里，可进行网址的搜索
