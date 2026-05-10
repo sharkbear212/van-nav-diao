@@ -20,8 +20,6 @@ docker run -d \
   aierdiao/van-nav-diao:latest
 ```
 
-20260510 后台搜索框里，可进行网址的搜索
-
 ## 预览
 
 ### PC
