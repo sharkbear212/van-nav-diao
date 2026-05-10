@@ -11,11 +11,11 @@ func GetToolsPage(page, pageSize int, keyword string, catelog string) ([]types.T
 	whereClause := "WHERE 1=1"
 	args := []interface{}{}
 
-	if keyword != "" {
-		whereClause += " AND (name LIKE ? OR desc LIKE ?)"
-		likeKeyword := "%" + keyword + "%"
-		args = append(args, likeKeyword, likeKeyword)
-	}
+if keyword != "" {
+	whereClause += " AND (name LIKE ? OR desc LIKE ? OR url LIKE ?)"
+	likeKeyword := "%" + keyword + "%"
+	args = append(args, likeKeyword, likeKeyword, likeKeyword)
+}
 
 	if catelog != "" {
 		whereClause += " AND catelog = ?"
