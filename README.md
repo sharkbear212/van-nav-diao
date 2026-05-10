@@ -3,6 +3,8 @@
 一个轻量的导航站，基于Mereithhh的Van-nav做一些小功能更改。  
 [源库地址](https://github.com/Mereithhh/van-nav)  
 
+20260510 后台搜索框里，可进行网址的搜索
+
 ## 预览
 
 ### PC
