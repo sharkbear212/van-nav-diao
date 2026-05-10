@@ -1,7 +1,11 @@
 # Nav
 
-一个轻量的导航站，基于Mereithhh的Van-nav做一些小功能更改。  
+一个轻量的导航站，底层基于Mereithhh的Van-nav
 [源库地址](https://github.com/Mereithhh/van-nav)  
+同时基于van579的增强版 
+[源库地址](https://github.com/van579/nav) 
+
+第一次用github，不太会用，直接自己fork一个用AI改着玩。
 
 20260510 后台搜索框里，可进行网址的搜索
 
